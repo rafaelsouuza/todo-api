@@ -4,6 +4,7 @@ import io.github.rafaelsouuza.todo.dtos.TodoDto;
 import io.github.rafaelsouuza.todo.entities.Todo;
 import io.github.rafaelsouuza.todo.repositories.TodoRespositoy;
 import io.github.rafaelsouuza.todo.service.exceptions.ResourceNotFoundException;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,12 +33,29 @@ public class TodoService {
         return list.stream().map(x -> new TodoDto(x)).collect(Collectors.toList());
     }
 
-    public Todo findById(Integer id) {
+    public TodoDto findById(Integer id) {
         Optional<Todo> obj = todoRespositoy.findById(id);
-        return obj.orElseThrow(() -> new ResourceNotFoundException(id));
+        obj.orElseThrow(() -> new ResourceNotFoundException(id));
+        return new TodoDto(obj.get());
     }
 
-    public Todo insert(Todo obj) {
-        return todoRespositoy.save(obj);
+    public TodoDto insert(TodoDto dto) {
+        Todo obj = new Todo();
+        copyToDtoToEntity(dto, obj);
+        todoRespositoy.save(obj);
+        return new TodoDto(obj);
+    }
+
+    public void delete(Integer id) {
+        Optional<Todo> obj = todoRespositoy.findById(id);
+        obj.orElseThrow(() -> new ResourceNotFoundException(id));
+        todoRespositoy.deleteById(id);
+    }
+
+    private void copyToDtoToEntity(TodoDto dto, Todo entity) {
+        entity.setTitulo(dto.getTitulo());
+        entity.setDescricao(dto.getDescricao());
+        entity.setDataParaFinalizar(dto.getDataParaFinalizar());
+        entity.setFinalizado(dto.getFinalizado());
     }
 }
