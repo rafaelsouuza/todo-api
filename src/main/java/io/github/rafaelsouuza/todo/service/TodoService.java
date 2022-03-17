@@ -4,7 +4,6 @@ import io.github.rafaelsouuza.todo.dtos.TodoDto;
 import io.github.rafaelsouuza.todo.entities.Todo;
 import io.github.rafaelsouuza.todo.repositories.TodoRespositoy;
 import io.github.rafaelsouuza.todo.service.exceptions.ResourceNotFoundException;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +49,14 @@ public class TodoService {
         Optional<Todo> obj = todoRespositoy.findById(id);
         obj.orElseThrow(() -> new ResourceNotFoundException(id));
         todoRespositoy.deleteById(id);
+    }
+
+    public TodoDto update(Integer id, TodoDto dto) {
+        Optional<Todo> obj = todoRespositoy.findById(id);
+        obj.orElseThrow(() -> new ResourceNotFoundException(id));
+        copyToDtoToEntity(dto, obj.get());
+        Todo newObj = todoRespositoy.save(obj.get());
+        return new TodoDto(newObj);
     }
 
     private void copyToDtoToEntity(TodoDto dto, Todo entity) {
